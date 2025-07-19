@@ -27,7 +27,7 @@ WORKDIR /app
 # The path '/app/target/*.jar' assumes your JAR is named something like 'your-app-name.jar'
 # and is located in the 'target' directory within the 'build' stage's /app directory.
 # Using a wildcard `*.jar` is safer if the exact JAR name might change.
-COPY --from=build /app/target/*.jar /app/app.jar
+COPY --from=build /app/target/my-greet-app.jar .
 
 # Expose the port your application listens on (e.g., 8080 for a web app)
 # This is optional but good practice for documentation and network configuration
@@ -35,4 +35,4 @@ COPY --from=build /app/target/*.jar /app/app.jar
 
 # Command to run the application when the container starts
 # This should point to the JAR file you copied in the previous step
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "my-greet-app.jar"]
