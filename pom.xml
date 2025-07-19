@@ -56,6 +56,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>my-greet-app</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
