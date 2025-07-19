@@ -18,7 +18,7 @@ RUN mvn package -DskipTests
 # Stage 2: Create the final, smaller runtime image
 # Using a JRE (Java Runtime Environment) image for a smaller final image
 
-FROM openjdk:17-slim-jre
+FROM eclipse-temurin:17-jre-focal
 
 # Set the working directory for the final application
 WORKDIR /app
