@@ -9,7 +9,7 @@ public class ControllerOperations {
 
 	@GetMapping("/msg")
 	public String getMethodName(@RequestParam String name) {
-		return "Good Morning " + name;
+		return "Good Morning " + name + " bro";
 	}
 
 }
