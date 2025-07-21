@@ -67,8 +67,8 @@ pipeline {
                 sshagent(['DeploymentServer_SSH']) {
                    
                  
-                    sh "ssh -o StrictHostKeyChecking=no surya@3.108.196.56 'docker rm -f greet || true'" // Remote command in single quotes
-                    sh "ssh -o StrictHostKeyChecking=no surya@3.108.196.56 'docker run -d --name greet -p 8083:8081 surya9704/greet:${env.BUILD_NUMBER}'" // Remote command in single quotes
+                    sh "ssh -o StrictHostKeyChecking=no surya@34.31.152.217 'docker rm -f greet || true'" // Remote command in single quotes
+                    sh "ssh -o StrictHostKeyChecking=no surya@34.31.152.217 'docker run -d --name greet -p 8083:8081 surya9704/greet:${env.BUILD_NUMBER}'" // Remote command in single quotes
                 }
             }
         }
