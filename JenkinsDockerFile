@@ -1,71 +1,64 @@
-pipeline
-{
+
+
+pipeline {
     agent any
 
-    tools
-    {
-        maven 'maven'
+    tools {
+        maven 'maven' // Ensure this matches your Jenkins Tools configuration
     }
 
-    environment
-    {
-        buildNumber = "${BUILD_NUMBER}"
-    }
+    
 
-    stages
-    {
-        stage('Checkout Code to Jenkins from GitHub')
-        {
-            steps()
-            {
+    stages {
+        stage('Checkout Code to Jenkins from GitHub') {
+            steps {
                 git branch: 'master', url: 'https://github.com/SURYA-TEJA-BTECH/Greet.git'
             }
         }
 
-        stage('Build Artifact using Maven')
-        {
-            steps()
-            {
+        stage('Build Artifact using Maven') {
+            steps {
                 sh 'mvn clean package'
             }
         }
 
-        stage("Build Docker Image")
-        {
-            steps()
-            {
-                sh 'docker build -t surya9704/greet:${buildNumber}'
+        stage("Build Docker Image") {
+            steps {
+                // Use env.BUILD_NUMBER directly for the tag
+                sh "docker build -t surya9704/greet:${env.BUILD_NUMBER} . " // Add '.' for context
             }
         }
 
-        stage("Authenticate and Push Docker Image to Docker Hub")
-        {
-            steps()
-            {
-                withCredentials([string(credentialsId: 'Docker_Hub_Password', variable: 'Docker_Hub_Password')])
-                {
-                    sh 'docker login -u surya9704 -p ${Docker_Hub_Password}'
+        stage("Authenticate and Push Docker Image to Docker Hub") {
+            steps {
+                // Securely pass Docker Hub password using withEnv
+                withCredentials([string(credentialsId: 'Docker_Hub_Password', variable: 'DOCKER_PASSWORD_VAR')]) {
+                    withEnv(["DOCKER_HUB_PASSWORD=${DOCKER_PASSWORD_VAR}"]) { // Make it a secure shell env var
+                        sh 'docker login -u surya9704 -p ${DOCKER_HUB_PASSWORD}' // Use the secure env var
+                    }
                 }
-                sh 'docker push  surya9704/greet:${buildNumber}'
+                // Push should be outside the login block if login persists for the session,
+                // or within if you want it to be tightly scoped.
+                // It's often better to use 'docker push' inside the withEnv block if the login token is short-lived.
+                // For simplicity, let's keep it here assuming login session persists.
+                sh "docker push surya9704/greet:${env.BUILD_NUMBER}"
             }
         }
 
-        stage('Remove Docker Image from Jenkins Locally')
-        {
-            steps()
-            {
-                sh 'docker rmi -f surya9704/greet:${buildNumber}'
+        stage('Remove Docker Image from Jenkins Locally') {
+            steps {
+                sh "docker rmi -f surya9704/greet:${env.BUILD_NUMBER}"
             }
         }
 
-        stage('Deploy Application to Deployment Server')
-        {
-            steps()
-            {
-                sshagent(['DeploymentServer_SSH'])
-                {
-                    sh "ssh -o StrictHostKeyChecking=no surya@34.31.152.217 docker rm -f greet || true"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@34.31.152.217 docker run -d --name greet -p 8083:8081 surya9704/greet:$Build_Number"
+        stage('Deploy Application to Deployment Server') {
+            steps {
+                // Ensure 'DeploymentServer_SSH' credential has the private key for 'surya' '
+                sshagent(['DeploymentServer_SSH']) {
+                   
+                 
+                    sh "ssh -o StrictHostKeyChecking=no surya@3.108.196.56 'docker rm -f greet || true'" // Remote command in single quotes
+                    sh "ssh -o StrictHostKeyChecking=no surya@3.108.196.56 'docker run -d --name greet -p 8083:8081 surya9704/greet:${env.BUILD_NUMBER}'" // Remote command in single quotes
                 }
             }
         }
