@@ -1,0 +1,73 @@
+pipeline
+{
+    agent any
+
+    tools
+    {
+        maven 'maven'
+    }
+
+    environment
+    {
+        buildNumber = "${BUILD_NUMBER}"
+    }
+
+    stages
+    {
+        stage('Checkout Code to Jenkins from GitHub')
+        {
+            steps()
+            {
+                git branch: 'master', url: 'https://github.com/SURYA-TEJA-BTECH/Greet.git'
+            }
+        }
+
+        stage('Build Artifact using Maven')
+        {
+            steps()
+            {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage("Build Docker Image")
+        {
+            steps()
+            {
+                sh 'docker build -t surya9704/greet:${buildNumber}'
+            }
+        }
+
+        stage("Authenticate and Push Docker Image to Docker Hub")
+        {
+            steps()
+            {
+                withCredentials([string(credentialsId: 'Docker_Hub_Password', variable: 'Docker_Hub_Password')])
+                {
+                    sh 'docker login -u surya9704 -p ${Docker_Hub_Password}'
+                }
+                sh 'docker push  surya9704/greet:${buildNumber}'
+            }
+        }
+
+        stage('Remove Docker Image from Jenkins Locally')
+        {
+            steps()
+            {
+                sh 'docker rmi -f surya9704/greet:${buildNumber}'
+            }
+        }
+
+        stage('Deploy Application to Deployment Server')
+        {
+            steps()
+            {
+                sshagent(['DeploymentServer_SSH'])
+                {
+                    sh "ssh -o StrictHostKeyChecking=no surya@34.31.152.217 docker rm -f greet || true"
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@34.31.152.217 docker run -d --name greet -p 8083:8081 surya9704/greet:$Build_Number"
+                }
+            }
+        }
+    }
+}
