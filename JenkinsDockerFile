@@ -7,9 +7,19 @@ pipeline {
         maven 'maven' // Ensure this matches your Jenkins Tools configuration
     }
 
-    
+
+
+
 
     stages {
+
+         stage('Identify Jenkins User') {
+                    steps {
+                        sh 'whoami'
+                        sh 'id' // 'id' command also shows groups the user belongs to
+                    }
+                }
+
         stage('Checkout Code to Jenkins from GitHub') {
             steps {
                 git branch: 'master', url: 'https://github.com/SURYA-TEJA-BTECH/Greet.git'
